@@ -26,4 +26,5 @@ async def download_yt_audio(url: str = Form(...)):
 
         return StreamingResponse(iter([audio_bytes]), media_type="audio/mpeg", headers={"Content-Disposition": "filename=audio.mp3"})
     except Exception as e:
+        logger.error(f"Failed to download audio: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to download audio: {str(e)}")
