@@ -1,16 +1,28 @@
 from fastapi import FastAPI, HTTPException, Form
 from fastapi.responses import StreamingResponse
 from pytube import YouTube
-from url import is_valid_youtube_url
+from fastapi import FastAPI, HTTPException
+from io import BytesIO
+import logging
+from utils.url import is_valid_youtube_url
+from pydantic import BaseModel
 
 app = FastAPI()
+
+# Initialize a logger
+logger = logging.getLogger(__name__)
+
+class YoutubeURL(BaseModel):
+    url: str
 
 @app.get('/')
 async def root():
     return {'example' : 'Hello World', 'data': 0}
 
 @app.post("/download_yt_audio")
-async def download_yt_audio(url: str = Form(...)):
+async def download_yt_audio(youtube_url: YoutubeURL):
+    url = youtube_url.url
+
     if not url:
         raise HTTPException(status_code=400, detail="YouTube URL not provided!")
 
@@ -19,12 +31,15 @@ async def download_yt_audio(url: str = Form(...)):
 
     try:
         yt = YouTube(url)
-
         audio_stream = yt.streams.filter(only_audio=True).first()
 
-        audio_bytes = audio_stream.stream_to_buffer()
+        # Use BytesIO as a buffer
+        buffer = BytesIO()
+        audio_stream.stream_to_buffer(buffer)
 
-        return StreamingResponse(iter([audio_bytes]), media_type="audio/mpeg", headers={"Content-Disposition": "filename=audio.mp3"})
+        buffer.seek(0)
+
+        return StreamingResponse(iter([buffer.read()]), media_type="audio/mpeg", headers={"Content-Disposition": "filename=audio.mp3"})
     except Exception as e:
         logger.error(f"Failed to download audio: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to download audio: {str(e)}")
