@@ -33,13 +33,18 @@ async def download_yt_audio(youtube_url: YoutubeURL):
         yt = YouTube(url)
         audio_stream = yt.streams.filter(only_audio=True).first()
 
-        # Use BytesIO as a buffer
         buffer = BytesIO()
         audio_stream.stream_to_buffer(buffer)
 
         buffer.seek(0)
 
-        return StreamingResponse(iter([buffer.read()]), media_type="audio/mpeg", headers={"Content-Disposition": "filename=audio.mp3"})
+        title = yt.title 
+
+        return StreamingResponse(
+            iter([buffer.read()]),
+            media_type="audio/mpeg",
+            headers={"Content-Disposition": f'filename="{title}.mp3"'},
+        )
     except Exception as e:
         logger.error(f"Failed to download audio: {str(e)}")
         raise HTTPException(status_code=500, detail=f"Failed to download audio: {str(e)}")
