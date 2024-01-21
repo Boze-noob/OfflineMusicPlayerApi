@@ -37,13 +37,15 @@ async def download_yt_audio(youtube_url: YoutubeURL):
         audio_stream.stream_to_buffer(buffer)
 
         buffer.seek(0)
-
+        
         title = yt.title 
+
+        content_length = len(buffer.getvalue())
 
         return StreamingResponse(
             iter([buffer.read()]),
             media_type="audio/mpeg",
-            headers={"Content-Disposition": f'filename="{title}.mp3"'},
+            headers={"Content-Disposition": f'filename="{title}.mp3"', "Content-Length": str(content_length),},
         )
     except Exception as e:
         logger.error(f"Failed to download audio: {str(e)}")
