@@ -5,11 +5,11 @@ from fastapi import FastAPI, HTTPException
 from io import BytesIO
 import logging
 from utils.url import is_valid_youtube_url
+from data.auth import api_keys
 from pydantic import BaseModel
 
 app = FastAPI()
 
-# Initialize a logger
 logger = logging.getLogger(__name__)
 
 class YoutubeURL(BaseModel):
@@ -17,10 +17,15 @@ class YoutubeURL(BaseModel):
 
 @app.get('/')
 async def root():
-    return {'example' : 'Hello World', 'data': 0}
+    return {'main_root' : 'Main Root', 'data': 0}
 
 @app.post("/download_yt_audio")
 async def download_yt_audio(youtube_url: YoutubeURL):
+    api_key = request.headers.get('Authorization')
+
+    if api_key not in api_keys.values():
+        raise HTTPException(status_code=401, detail="Unauthorized!")
+
     url = youtube_url.url
 
     if not url:
