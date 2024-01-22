@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Form
+from fastapi import FastAPI, HTTPException, Request
 from fastapi.responses import StreamingResponse
 from pytube import YouTube
 from fastapi import FastAPI, HTTPException
@@ -20,7 +20,7 @@ async def root():
     return {'main_root' : 'Main Root', 'data': 0}
 
 @app.post("/download_yt_audio")
-async def download_yt_audio(youtube_url: YoutubeURL):
+async def download_yt_audio(youtube_url: YoutubeURL, request: Request):
     api_key = request.headers.get('Authorization')
 
     if api_key not in api_keys.values():
