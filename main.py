@@ -7,10 +7,8 @@ import logging
 from utils.url import is_valid_youtube_url
 from data.auth import api_keys
 from pydantic import BaseModel
-#TODO check this below
 from fastapi import FastAPI, HTTPException, Depends, Request
 from fastapi.middleware.httpsredirect import HTTPSRedirectMiddleware
-#TODO install slowapi
 from slowapi import Limiter, _rate_limit_exceeded_handler
 from slowapi.util import get_remote_address
 from slowapi.errors import RateLimitExceeded
@@ -32,7 +30,7 @@ class YoutubeURL(BaseModel):
 
 @app.get('/')
 @limiter.limit("1/minute")
-async def root():
+async def root(request: Request):
     return {'main_root' : 'Main Root', 'data': 0}
 
 @app.post("/download_yt_audio")
